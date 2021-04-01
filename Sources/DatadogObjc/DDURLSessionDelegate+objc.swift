@@ -8,4 +8,30 @@ import Foundation
 import Datadog
 
 @objc
-public class DDNSURLSessionDelegate: DDURLSessionDelegate {}
+open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, DDURLSessionDelegateProviding {
+    public let delegate: DDURLSessionDelegate
+
+    @objc
+    override public init() {
+        self.delegate = DDURLSessionDelegate()
+    }
+
+    /// Automatically tracked hosts can be customized per instance with this initializer
+    /// - Parameter additionalFirstPartyHosts: these hosts are tracked **in addition to** what was
+    /// passed to `DatadogConfiguration.Builder` via `trackURLSession(firstPartyHosts:)`
+    /// **NOTE:** If `trackURLSession(firstPartyHosts:)` is never called, automatic tracking will **not** take place
+    @objc
+    public init(additionalFirstPartyHosts: Set<String>) {
+        self.delegate = DDURLSessionDelegate(additionalFirstPartyHosts: additionalFirstPartyHosts)
+    }
+
+    @objc
+    open func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+        delegate.urlSession(session, task: task, didFinishCollecting: metrics)
+    }
+
+    @objc
+    open func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        delegate.urlSession(session, task: task, didCompleteWithError: error)
+    }
+}

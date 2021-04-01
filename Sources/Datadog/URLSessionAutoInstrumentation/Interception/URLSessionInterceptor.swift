@@ -178,7 +178,8 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
     // MARK: - Private
 
     private func isFirstParty(request: URLRequest, for session: URLSession?) -> Bool {
-        let delegateURLFilter = (session?.delegate as? DDURLSessionDelegate)?.firstPartyURLsFilter
+        let delegateProvider = session?.delegate as? DDURLSessionDelegateProviding
+        let delegateURLFilter = delegateProvider?.delegate.firstPartyURLsFilter
         let isFirstPartyForDelegate = (delegateURLFilter?.isFirstParty(url: request.url)) ?? false
         let isFirstPartyForInterceptor = self.defaultFirstPartyURLsFilter.isFirstParty(url: request.url)
         return isFirstPartyForDelegate || isFirstPartyForInterceptor

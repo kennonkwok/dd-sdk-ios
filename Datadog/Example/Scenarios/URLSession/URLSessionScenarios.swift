@@ -6,6 +6,7 @@
 
 import Foundation
 import Datadog
+import DatadogObjc
 
 /// Base scenario for `URLSession` and `NSURLSession` instrumentation.  It makes
 /// both Swift and Objective-C tests share the same endpoints and SDK configuration.
@@ -83,7 +84,6 @@ class URLSessionBaseScenario: NSObject {
         }
     }
 
-    @objc
     func buildURLSession() -> URLSession {
         let delegate: DDURLSessionDelegate
         if feedAdditionalFirstyPartyHosts {
@@ -96,6 +96,27 @@ class URLSessionBaseScenario: NSObject {
             )
         } else {
             delegate = DDURLSessionDelegate()
+        }
+        return URLSession(
+            configuration: .default,
+            delegate: delegate,
+            delegateQueue: nil
+        )
+    }
+
+    @objc
+    func buildNSURLSession() -> URLSession {
+        let delegate: DDNSURLSessionDelegate
+        if feedAdditionalFirstyPartyHosts {
+            delegate = DDNSURLSessionDelegate(
+                additionalFirstPartyHosts: [
+                    customGETResourceURL.host!,
+                    customPOSTRequest.url!.host!,
+                    badResourceURL.host!
+                ]
+            )
+        } else {
+            delegate = DDNSURLSessionDelegate()
         }
         return URLSession(
             configuration: .default,
